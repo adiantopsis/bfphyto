@@ -1,0 +1,24 @@
+Package: bfphyto
+Title: Get your phytosociological parameters and reports done blazing fast
+Version: 0.0.1
+Authors@R: 
+    person("Denilson", "Machado", , "Denilsonmachado96@gmail.com", role = c("aut", "cre"))
+Description: This package provides tools to deals with floristic data and calculate key phytosociological parameters for both herbaceous and forest vegetation. It includes tools for analyzing vegetation cover, species/area relationship, diameters for multi-stemmed plants, and summarizing our results. By automating common phytosociological calculations and data processing, the package significantly speeds up the generation of ecological reports, helping researchers produce results faster and more efficiently.
+License: GPL-3 
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+   stats,
+   doParallel,
+   foreach,
+   parallel,
+   jsonlite,
+   data.table,
+   taxize,
+   tidyr,
+    dplyr,
+    ggplot2,
+    iNEXT,
+    reshape2,
+    vegan
