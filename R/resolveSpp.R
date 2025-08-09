@@ -53,11 +53,24 @@
 
 resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
   capitalize <- function(x) {
-    sapply(strsplit(x, " "), function(y) {
-      paste(toupper(substring(y, 1, 1)), tolower(substring(y, 2)), sep = "", collapse = " ")
-    }, USE.NAMES = FALSE)
+    sapply(
+      strsplit(x, " "),
+      function(y) {
+        paste(
+          toupper(substring(y, 1, 1)),
+          tolower(substring(y, 2)),
+          sep = "",
+          collapse = " "
+        )
+      },
+      USE.NAMES = FALSE
+    )
   }
-  species <- trimws(gsub(pattern = "\\bsp\\b.*", replacement = " ", x = species))
+  species <- trimws(gsub(
+    pattern = "\\bsp\\b.*",
+    replacement = " ",
+    x = species
+  ))
 
   # Busca exata
   exact_df <- flora[flora$taxa %in% species, ]
@@ -69,7 +82,12 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
 
   # Busca fuzzy com controle de "var." ou "subsp."
   fuzzy_matches <- lapply(not_matched, function(y) {
-    candidatos <- agrep(pattern = y, x = flora$taxa, max.distance = 0.1, value = TRUE)
+    candidatos <- agrep(
+      pattern = y,
+      x = flora$taxa,
+      max.distance = 0.1,
+      value = TRUE
+    )
     if (grepl("var\\.|subsp\\.", y)) {
       candidatos <- candidatos[grepl("var\\.|subsp\\.", candidatos)]
     } else {
@@ -130,37 +148,64 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
   df$AcceptedName[df$MatchType == "Not Found"] <- NA
   df$Genus[df$MatchType == "Not Found"] <- NA
   df$Genus[df$establishmentMeans == "Not Found"] <- NA
+  df$Family <- df$family
 
   # Substituir informações de sinônimos por dados do nome aceito
-  cor <- flora[flora$taxa %in% df$AcceptedName & flora$taxonomicStatus == "NOME_ACEITO", ]
+  cor <- flora[
+    flora$taxa %in% df$AcceptedName & flora$taxonomicStatus == "NOME_ACEITO",
+  ]
 
-  idx_sinonimos <- which(df$taxonomicStatus != "NOME_ACEITO" & !is.na(df$AcceptedName))
+  idx_sinonimos <- which(
+    df$taxonomicStatus != "NOME_ACEITO" & !is.na(df$AcceptedName)
+  )
   match_idx <- match(df$AcceptedName[idx_sinonimos], cor$taxa)
   validos <- which(!is.na(match_idx))
 
   cols_para_substituir <- c("establishmentMeans", "Endemism")
-  cols_validas <- cols_para_substituir[cols_para_substituir %in% names(df) & cols_para_substituir %in% names(cor)]
+  cols_validas <- cols_para_substituir[
+    cols_para_substituir %in% names(df) & cols_para_substituir %in% names(cor)
+  ]
 
   for (col in cols_validas) {
     df[idx_sinonimos[validos], col] <- cor[match_idx[validos], col]
   }
   colnames(df)
-  df$Origin[!is.na(df$establishmentMeans)] <- capitalize(df$establishmentMeans[!is.na(df$establishmentMeans)])
-  df$Status[!is.na(df$taxonomicStatus)] <- capitalize(gsub(df$taxonomicStatus[!is.na(df$taxonomicStatus)], pattern = "_", replacement = " "))
-
+  df$Origin[!is.na(df$establishmentMeans)] <- capitalize(df$establishmentMeans[
+    !is.na(df$establishmentMeans)
+  ])
+  df$Status[!is.na(df$taxonomicStatus)] <- capitalize(gsub(
+    df$taxonomicStatus[!is.na(df$taxonomicStatus)],
+    pattern = "_",
+    replacement = " "
+  ))
 
   df$Distance <- mapply(adist, x = df$SubmittedName, y = df$MatchedName)
   colnames(df)
   # Selecionar e reordenar colunas finais
   if (simplify == TRUE) {
     colunas_finais <- c(
-      "Family", "SubmittedName", "MatchedName", "AcceptedName", "Distance",
+      "Family",
+      "SubmittedName",
+      "MatchedName",
+      "AcceptedName",
+      "Distance",
       "MatchType"
     )
   } else {
     colunas_finais <- c(
-      "Family", "Genus", "SubmittedName", "MatchedName", "AcceptedName", "Distance",
-      "MatchType", "Status", "Endemism", "Origin", "Habitat", "Form", "VegType"
+      "Family",
+      "Genus",
+      "SubmittedName",
+      "MatchedName",
+      "AcceptedName",
+      "Distance",
+      "MatchType",
+      "Status",
+      "Endemism",
+      "Origin",
+      "Habitat",
+      "Form",
+      "VegType"
     )
   }
 
