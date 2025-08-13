@@ -12,9 +12,9 @@
 #' @examples
 #' Example usage:
 #' data(Southern_Camp)
-#' plantCover(x = Southern_Camp, area = 1)
+#' herbPhyto(x = Southern_Camp, area = 1)
 #' @export
-herbPhylo <- function(x, area) {
+herbPhyto <- function(x, area) {
   matriz <- table(x$spp, x$parc)
 
   #numero de parcelas

@@ -3,19 +3,24 @@
 #' This function downloads the latest version of the Darwin Core Archive (DwC-A) from the official
 #' Flora and Funga of Brazil repository, extracts and processes taxonomic, distribution, and species
 #' profile information. The result is returned as a cleaned and optionally simplified `data.frame`.
+#' If the DwC-A is already downloaded in the indicated directory, then the function gets
+#' the data and translate into a organized data frame.
 #'
 #' @param dir Character. The directory where the DwC-A file will be downloaded and extracted.
 #'            Default is a temporary directory created with `tempdir()`.
+#'
 #' @param simply Logical. If `TRUE`, removes some columns related to taxonomic hierarchy and remarks
-#'               (e.g., phylum, class, order, occurrenceRemarks) to simplify the output. Default is `TRUE`.
+#'               (e.g., phylum, class, order, countryCode,  occurrenceRemarks, ) to simplify the output. Default is `TRUE`.
+#'
+#' @param cores Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.
 #'
 #' @return A `data.frame` containing taxonomic information from Flora and Funga of Brazil. Columns include:
 #' \itemize{
 #'   \item \code{id} - Unique identifier for each taxon
 #'   \item \code{family}, \code{genus}, \code{taxa}, \code{scientificName}, \code{acceptedNameUsage}
-#'   \item \code{taxonomicStatus}, \code{nomenclaturalStatus}, \code{Endemismo}, \code{lifeForm}, and more
+#'   \item \code{taxonomicStatus}, \code{nomenclaturalStatus}, \code{Endemis}, \code{Form}, and more
 #' }
-#' The exact columns may vary depending on the `simply` argument.
+#' The exact columns may vary depending on the `simplify` argument.
 #'
 #' @details
 #' The function processes three files from the Darwin Core Archive:
@@ -26,7 +31,8 @@
 #' }
 #' It also filters for Plantae and constructs species names using taxonomic rank information.
 #'
-#' @note This function requires internet access and may take several seconds to run.
+#' @seealso resolveSpp().
+#' @note This function requires internet access and take seconds to run.
 #'
 #' @examples
 #' \dontrun{
@@ -38,31 +44,36 @@
 #' @import parallel
 #' @import jsonlite
 #' @export
-getReflora <- function(x, dir = tempdir(), simplify = TRUE, cores = 3) {
+getReflora <- function(
+  x,
+  dir = tempdir(),
+  simplify = TRUE,
+  cores = 3
+) {
   require(jsonlite)
   require(parallel)
-  url_dwca <- "https://ipt.jbrj.gov.br/jbrj/archive.do?r=lista_especies_flora_brasil"
   dir <- dir
-  zip_file <- file.path(dir, "flora_brasil_dwca.zip")
-  download.file(url_dwca, destfile = zip_file, mode = "wb")
-
-  unzip(zip_file, exdir = dir)
-  message("Download e extração concluídos em: ", dir)
-
   taxon_file <- file.path(dir, "taxon.txt")
   distr_file <- file.path(dir, "distribution.txt")
   profile_file <- file.path(dir, "speciesprofile.txt")
 
-  if (!file.exists(taxon_file)) {
-    stop("Arquivo taxon.txt não encontrado na pasta fornecida.")
+  if (file.exists(taxon_file)) {
+    taxa <- data.table::fread(taxon_file, showProgress = F, verbose = F)
+    profile <- data.table::fread(profile_file, showProgress = F, verbose = F)
+    distr <- data.table::fread(distr_file, showProgress = F, verbose = F)
+  } else {
+    dir <- dir
+    url_dwca <- "https://ipt.jbrj.gov.br/jbrj/archive.do?r=lista_especies_flora_brasil"
+    zip_file <- file.path(dir, "flora_brasil_dwca.zip")
+    download.file(url_dwca, destfile = zip_file, mode = "wb")
+    unzip(zip_file, exdir = dir)
+    message("Download e extração concluídos em: ", dir)
+    taxa <- data.table::fread(taxon_file, showProgress = F, verbose = F)
+    profile <- data.table::fread(profile_file, showProgress = F, verbose = F)
+    distr <- data.table::fread(distr_file, showProgress = F, verbose = F)
   }
 
-  taxa <- data.table::fread(taxon_file, showProgress = F, verbose = F)
-  profile <- data.table::fread(profile_file, showProgress = F, verbose = F)
-  distr <- data.table::fread(distr_file, showProgress = F, verbose = F)
-
   plantae <- taxa[grep(x = taxa$kingdom, pattern = "Plantae|PLANTAE"), ]
-
   spp <- !grepl(
     plantae$taxonRank,
     pattern = "FAMILIA|GENERO|TRIBO|SUB_FAMILIA|CLASSE"
@@ -126,20 +137,36 @@ getReflora <- function(x, dir = tempdir(), simplify = TRUE, cores = 3) {
   )
 
   rows <- !is.na(profile$lifeForm) & profile$lifeForm != ""
-  profile$Form[rows] <- parallel::mclapply(profile$lifeForm[rows], mc.cores = cores, function(x) fromJSON(x)$lifeForm)
-  profile$Habitat[rows] <- parallel::mclapply(profile$lifeForm[rows], mc.cores = cores, function(x) fromJSON(x)$habitat)
-  profile$VegType[rows] <- parallel::mclapply(profile$lifeForm[rows], mc.cores = cores, function(x) fromJSON(x)$vegetationType)
+  profile$Form[rows] <- parallel::mclapply(
+    profile$lifeForm[rows],
+    mc.cores = cores,
+    function(x) fromJSON(x)$lifeForm
+  )
+  profile$Habitat[rows] <- parallel::mclapply(
+    profile$lifeForm[rows],
+    mc.cores = cores,
+    function(x) fromJSON(x)$habitat
+  )
+  profile$VegType[rows] <- parallel::mclapply(
+    profile$lifeForm[rows],
+    mc.cores = cores,
+    function(x) fromJSON(x)$vegetationType
+  )
   profile$lifeForm <- NULL
   profile$habitat <- NULL
 
   rows <- !is.na(distr$occurrenceRemarks) & distr$occurrenceRemarks != ""
   distr$Endemism[rows] <-
-    parallel::mclapply(distr$occurrenceRemarks[rows],
-      mc.cores = cores, function(x) fromJSON(x)$endemism
+    parallel::mclapply(
+      distr$occurrenceRemarks[rows],
+      mc.cores = cores,
+      function(x) fromJSON(x)$endemism
     )
   distr$Domain[rows] <-
-    parallel::mclapply(distr$occurrenceRemarks[rows],
-      mc.cores = cores, function(x) fromJSON(x)$phytogeographicDomain
+    parallel::mclapply(
+      distr$occurrenceRemarks[rows],
+      mc.cores = cores,
+      function(x) fromJSON(x)$phytogeographicDomain
     )
 
   distr$occurrenceRemarks <- NULL
@@ -150,8 +177,15 @@ getReflora <- function(x, dir = tempdir(), simplify = TRUE, cores = 3) {
 
   colnames(final_df)
   if (simplify == TRUE) {
-    cols_to_remove <- c("occurrenceRemarks", "countryCode", "phylum", "class", "order")
+    cols_to_remove <- c(
+      "occurrenceRemarks",
+      "countryCode",
+      "phylum",
+      "class",
+      "order"
+    )
     final_df <- final_df[, !(names(final_df) %in% cols_to_remove)]
   }
+
   return(final_df)
 }

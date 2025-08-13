@@ -10,22 +10,26 @@ getReflora(x, dir = tempdir(), simplify = TRUE, cores = 3)
 \item{dir}{Character. The directory where the DwC-A file will be downloaded and extracted.
 Default is a temporary directory created with \code{tempdir()}.}
 
+\item{cores}{Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.}
+
 \item{simply}{Logical. If \code{TRUE}, removes some columns related to taxonomic hierarchy and remarks
-(e.g., phylum, class, order, occurrenceRemarks) to simplify the output. Default is \code{TRUE}.}
+(e.g., phylum, class, order, countryCode,  occurrenceRemarks, ) to simplify the output. Default is \code{TRUE}.}
 }
 \value{
 A \code{data.frame} containing taxonomic information from Flora and Funga of Brazil. Columns include:
 \itemize{
 \item \code{id} - Unique identifier for each taxon
 \item \code{family}, \code{genus}, \code{taxa}, \code{scientificName}, \code{acceptedNameUsage}
-\item \code{taxonomicStatus}, \code{nomenclaturalStatus}, \code{Endemismo}, \code{lifeForm}, and more
+\item \code{taxonomicStatus}, \code{nomenclaturalStatus}, \code{Endemis}, \code{Form}, and more
 }
-The exact columns may vary depending on the \code{simply} argument.
+The exact columns may vary depending on the \code{simplify} argument.
 }
 \description{
 This function downloads the latest version of the Darwin Core Archive (DwC-A) from the official
 Flora and Funga of Brazil repository, extracts and processes taxonomic, distribution, and species
 profile information. The result is returned as a cleaned and optionally simplified \code{data.frame}.
+If the DwC-A is already downloaded in the indicated directory, then the function gets
+the data and translate into a organized data frame.
 }
 \details{
 The function processes three files from the Darwin Core Archive:
@@ -37,7 +41,7 @@ The function processes three files from the Darwin Core Archive:
 It also filters for Plantae and constructs species names using taxonomic rank information.
 }
 \note{
-This function requires internet access and may take several seconds to run.
+This function requires internet access and take seconds to run.
 }
 \examples{
 \dontrun{
@@ -45,4 +49,7 @@ flora <- getReflora(cores = 5)
 head(flora)
 }
 
+}
+\seealso{
+resolveSpp().
 }

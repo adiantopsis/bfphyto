@@ -10,6 +10,9 @@
 #' @param flora A `data.frame` returned by [getReflora()]. If not provided, the function will call `getReflora()`
 #'              to download and process the most recent dataset. Default is `getReflora()`.
 #'
+#' @param simplify Logical. If `TRUE` return few columns with species submitted, matched and acceptedname.
+#' If `FALSE` return all previous information along with species origin, habitat, lifeform or its occurrence domain.
+#'
 #' @return A `data.frame` with taxonomic resolution results, including the following columns (if available):
 #' \itemize{
 #'   \item \code{Family} — Family name
@@ -18,22 +21,20 @@
 #'   \item \code{MatchedName} — Closest matching name found in the flora
 #'   \item \code{AcceptedName} — Accepted name based on taxonomic status (2 or 3-word version)
 #'   \item \code{MatchType} — Match type: "Exact", "Fuzzy", or "Not Found"
-#'   \item \code{Status} — Taxonomic status (e.g., "Nome Aceito", "Sinônimo") capitalized
+#'   \item \code{Status} — Taxonomic status (e.g., "Accepted Name" or "Synonym")
 #'   \item \code{Endemism} — Endemism status, if available (e.g., "Endêmica", "Não Endêmica")
-#'   \item \code{Origin} — Establishment means (e.g., "Nativa", "Exótica")
+#'   \item \code{Origin} — Return if species is native, cultivated or naturalized
+#'   \item \code{VegType} — Brazilian phytogeographic domain of occurrence
 #' }
 #'
 #' @details
-#' The function performs:
+#' The function correct performs:
 #' \itemize{
-#'   \item Exact matching using `%in%`
-#'   \item Fuzzy matching using `agrep` (with `max.distance = 0.1`)
-#'   \item Filtering of infra-specific ranks (`var.`, `subsp.`) to improve fuzzy matching
-#'   \item Automatic replacement of data for synonyms with values from their accepted names
-#'   \item Capitalization of taxonomic status and origin for readability
+#'   \item Exact matching
+#'   \item Fuzzy matching (with `max.distance = 0.1`)
 #' }
-#'
 #' @note For large species lists, fuzzy matching may take a few seconds to process.
+#'
 #' ALWAYS submit scientific names to minimize the errors.
 #' ALWAYS check the final results looking if the submitted names matched correctly
 #'
@@ -50,7 +51,6 @@
 #' @seealso [getReflora()]
 #'
 #' @export
-
 resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
   capitalize <- function(x) {
     sapply(
