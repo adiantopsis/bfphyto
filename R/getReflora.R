@@ -9,7 +9,7 @@
 #' @param dir Character. The directory where the DwC-A file will be downloaded and extracted.
 #'            Default is a temporary directory created with `tempdir()`.
 #'
-#' @param simply Logical. If `TRUE`, removes some columns related to taxonomic hierarchy and remarks
+#' @param simplify Logical. If `TRUE`, removes some columns related to taxonomic hierarchy and remarks
 #'               (e.g., phylum, class, order, countryCode,  occurrenceRemarks, ) to simplify the output. Default is `TRUE`.
 #'
 #' @param cores Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.
@@ -45,11 +45,9 @@
 #' @import jsonlite
 #' @export
 getReflora <- function(
-  x,
-  dir = tempdir(),
-  simplify = TRUE,
-  cores = 3
-) {
+    dir = tempdir(),
+    simplify = TRUE,
+    cores = 3) {
   require(jsonlite)
   require(parallel)
   dir <- dir
