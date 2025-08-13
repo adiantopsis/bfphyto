@@ -1,4 +1,4 @@
-#' Download and Import Taxonomic Data from Flora and Funga of Brazil
+#' Download taxonomic data from flora and funga of Brazil
 #'
 #' This function downloads the latest version of the Darwin Core Archive (DwC-A) from the official
 #' Flora and Funga of Brazil repository, extracts and processes taxonomic, distribution, and species
@@ -9,16 +9,16 @@
 #' @param dir Character. The directory where the DwC-A file will be downloaded and extracted.
 #'            Default is a temporary directory created with `tempdir()`.
 #'
+#' @param cores Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.
+#'
 #' @param simplify Logical. If `TRUE`, removes some columns related to taxonomic hierarchy and remarks
 #'               (e.g., phylum, class, order, countryCode,  occurrenceRemarks, ) to simplify the output. Default is `TRUE`.
-#'
-#' @param cores Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.
 #'
 #' @return A `data.frame` containing taxonomic information from Flora and Funga of Brazil. Columns include:
 #' \itemize{
 #'   \item \code{id} - Unique identifier for each taxon
 #'   \item \code{family}, \code{genus}, \code{taxa}, \code{scientificName}, \code{acceptedNameUsage}
-#'   \item \code{taxonomicStatus}, \code{nomenclaturalStatus}, \code{Endemis}, \code{Form}, and more
+#'   \item \code{taxonomicStatus}, \code{nomenclaturalStatus}, \code{Endemism}, \code{Form}, and more
 #' }
 #' The exact columns may vary depending on the `simplify` argument.
 #'
