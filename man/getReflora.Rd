@@ -2,25 +2,25 @@
 % Please edit documentation in R/getReflora.R
 \name{getReflora}
 \alias{getReflora}
-\title{Download and Import Taxonomic Data from Flora and Funga of Brazil}
+\title{Download taxonomic data from flora and funga of Brazil}
 \usage{
-getReflora(x, dir = tempdir(), simplify = TRUE, cores = 3)
+getReflora(dir = tempdir(), simplify = TRUE, cores = 3)
 }
 \arguments{
 \item{dir}{Character. The directory where the DwC-A file will be downloaded and extracted.
 Default is a temporary directory created with \code{tempdir()}.}
 
-\item{cores}{Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.}
-
-\item{simply}{Logical. If \code{TRUE}, removes some columns related to taxonomic hierarchy and remarks
+\item{simplify}{Logical. If \code{TRUE}, removes some columns related to taxonomic hierarchy and remarks
 (e.g., phylum, class, order, countryCode,  occurrenceRemarks, ) to simplify the output. Default is \code{TRUE}.}
+
+\item{cores}{Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.}
 }
 \value{
 A \code{data.frame} containing taxonomic information from Flora and Funga of Brazil. Columns include:
 \itemize{
 \item \code{id} - Unique identifier for each taxon
 \item \code{family}, \code{genus}, \code{taxa}, \code{scientificName}, \code{acceptedNameUsage}
-\item \code{taxonomicStatus}, \code{nomenclaturalStatus}, \code{Endemis}, \code{Form}, and more
+\item \code{taxonomicStatus}, \code{nomenclaturalStatus}, \code{Endemism}, \code{Form}, and more
 }
 The exact columns may vary depending on the \code{simplify} argument.
 }

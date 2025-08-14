@@ -44,12 +44,14 @@
 #' @import parallel
 #' @import jsonlite
 #' @export
+dir <- tempdir()
+cores <- 3
 getReflora <- function(
     dir = tempdir(),
     simplify = TRUE,
     cores = 3) {
-  require(jsonlite)
-  require(parallel)
+  library(jsonlite)
+  library(parallel)
   dir <- dir
   taxon_file <- file.path(dir, "taxon.txt")
   distr_file <- file.path(dir, "distribution.txt")
@@ -135,37 +137,47 @@ getReflora <- function(
   )
 
   rows <- !is.na(profile$lifeForm) & profile$lifeForm != ""
-  profile$Form[rows] <- parallel::mclapply(
+  profile$Form[rows] <- unlist(parallel::mclapply(
     profile$lifeForm[rows],
     mc.cores = cores,
-    function(x) fromJSON(x)$lifeForm
-  )
-  profile$Habitat[rows] <- parallel::mclapply(
+    function(x) {
+      form <- fromJSON(x)$lifeForm
+      as.character(paste(form, collapse = ", "))
+    }
+  ))
+
+  rows <- !is.na(profile$lifeForm) & profile$lifeForm != ""
+  profile$VegType[rows] <- unlist(parallel::mclapply(
     profile$lifeForm[rows],
     mc.cores = cores,
-    function(x) fromJSON(x)$habitat
-  )
-  profile$VegType[rows] <- parallel::mclapply(
-    profile$lifeForm[rows],
-    mc.cores = cores,
-    function(x) fromJSON(x)$vegetationType
-  )
+    function(x) {
+      veg <- fromJSON(x)$vegetationType
+      as.character(paste(veg, collapse = ", "))
+    }
+  ))
   profile$lifeForm <- NULL
   profile$habitat <- NULL
 
   rows <- !is.na(distr$occurrenceRemarks) & distr$occurrenceRemarks != ""
   distr$Endemism[rows] <-
-    parallel::mclapply(
+    unlist(parallel::mclapply(
       distr$occurrenceRemarks[rows],
       mc.cores = cores,
-      function(x) fromJSON(x)$endemism
-    )
+      function(x) {
+        end <- fromJSON(x)$endemism
+        as.character(paste(end, collapse = ", "))
+      }
+    ))
+
   distr$Domain[rows] <-
-    parallel::mclapply(
+    unlist(parallel::mclapply(
       distr$occurrenceRemarks[rows],
       mc.cores = cores,
-      function(x) fromJSON(x)$phytogeographicDomain
-    )
+      function(x) {
+        veg <- fromJSON(x)$phytogeographicDomain
+        as.character(paste(veg, collapse = ", "))
+      }
+    ))
 
   distr$occurrenceRemarks <- NULL
 
@@ -173,7 +185,6 @@ getReflora <- function(
   final_df <- merge(dist_df, profile, by = "id", all.x = TRUE)
   final_df <- final_df[!duplicated(final_df$id), ]
 
-  colnames(final_df)
   if (simplify == TRUE) {
     cols_to_remove <- c(
       "occurrenceRemarks",
