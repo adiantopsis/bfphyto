@@ -1,7 +1,7 @@
 #' Function for calculating phytosociological descriptors and adjusting phytosociological data tables
 #'
 #' This function calculates phytosociological descriptors and performs adjustments on data tables.
-#' It is largely adapted from the `PhytoIndex` function available at https://github.com/ricds/fitoR, created by
+#' And is an adaptation of `FitoR` function available at https://github.com/ricds/fitoR, created by
 #' Alexandre Gabriel Christo, Pedro Higuchi, Ricardo Dal'Agnol, and Arthur Vinicius Rodrigues.
 #'
 #' @details
