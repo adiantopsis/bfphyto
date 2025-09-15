@@ -72,15 +72,13 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
     x = species
   ))
 
-  # Busca exata
   exact_df <- flora[flora$taxa %in% species, ]
-  exact_df$MatchType <- "Exact"
+  tryCatch(exact_df$MatchType <- "Exact", error = function(e) {
+    rep(NA, ncol(flora))
+  })
+
   exact_df$SubmittedName <- exact_df$taxa
-
-  # Espécies não encontradas exatamente
   not_matched <- setdiff(species, flora$taxa)
-
-  # Busca fuzzy com controle de "var." ou "subsp."
   fuzzy_matches <- lapply(not_matched, function(y) {
     candidatos <- agrep(
       pattern = y,
@@ -95,22 +93,20 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
     }
     if (length(candidatos) == 0) NA else candidatos[1]
   })
-
   names(fuzzy_matches) <- not_matched
-
   fuzzy_df <- data.frame(
     SubmittedName = names(fuzzy_matches),
     MatchedName = unlist(fuzzy_matches),
     stringsAsFactors = FALSE
   )
-
-  # Resultados fuzzy encontrados
   fuzzy_found <- flora[flora$taxa %in% fuzzy_df$MatchedName, ]
-  fuzzy_found$MatchType <- "Fuzzy"
-  fuzzy_found$SubmittedName <-
-    fuzzy_df$SubmittedName[match(fuzzy_found$taxa, fuzzy_df$MatchedName)]
-
-  # Resultados não encontrados
+  tryCatch(fuzzy_found$MatchType <- "Fuzzy", error = function(e) {
+    rep(NA)
+  })
+  fuzzy_found$SubmittedName <- fuzzy_df$SubmittedName[match(
+    fuzzy_found$taxa,
+    fuzzy_df$MatchedName
+  )]
   not_found_n <- sum(is.na(fuzzy_df$MatchedName))
   not_found_df <- if (not_found_n > 0) {
     nf <- data.frame(matrix(NA, nrow = not_found_n, ncol = ncol(flora)))
@@ -122,50 +118,36 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
   } else {
     NULL
   }
-
-  # Combinar todos
   df <- rbind(fuzzy_found, exact_df, not_found_df)
-
-  # Preencher acceptedNameUsage se estiver vazio
   idx_vazios <- is.na(df$acceptedNameUsage) | df$acceptedNameUsage == ""
   df$acceptedNameUsage[idx_vazios] <- df$taxa[idx_vazios]
-
-  # Extrair gênero
   df$Genus <- sub(" .*", "", df$acceptedNameUsage)
-
-  # Renomear coluna original
   df$MatchedName <- df$taxa
-
-  # Criar acceptedname com 2 ou 3 palavras
   df$AcceptedName <- ifelse(
     grepl(" var\\.| subsp\\.| x ", tolower(df$acceptedNameUsage)),
-    sub("^(([^ ]+ +){4})[^ ]+.*$", "\\1", df$acceptedNameUsage), # mantém 3 palavras
-    sub("^(([^ ]+ +){2})[^ ]*.*$", "\\1", df$acceptedNameUsage) # mantém 2 palavras
+    sub("^(([^ ]+ +){4})[^ ]+.*$", "\\1", df$acceptedNameUsage),
+    sub("^(([^ ]+ +){2})[^ ]*.*$", "\\1", df$acceptedNameUsage)
   )
   df$AcceptedName <- trimws(df$AcceptedName)
-
-  # Ajustar valores quando NOT_FOUND
   df$AcceptedName[df$MatchType == "Not Found"] <- NA
   df$Genus[df$MatchType == "Not Found"] <- NA
   df$Genus[df$establishmentMeans == "Not Found"] <- NA
   df$Family <- df$family
-
-  # Substituir informações de sinônimos por dados do nome aceito
   cor <- flora[
     flora$taxa %in% df$AcceptedName & flora$taxonomicStatus == "NOME_ACEITO",
   ]
-
   idx_sinonimos <- which(
-    df$taxonomicStatus != "NOME_ACEITO" & !is.na(df$AcceptedName)
+    df$taxonomicStatus != "NOME_ACEITO" &
+      !is.na(df$AcceptedName)
   )
   match_idx <- match(df$AcceptedName[idx_sinonimos], cor$taxa)
   validos <- which(!is.na(match_idx))
-
   cols_para_substituir <- c("establishmentMeans", "Endemism")
   cols_validas <- cols_para_substituir[
-    cols_para_substituir %in% names(df) & cols_para_substituir %in% names(cor)
+    cols_para_substituir %in%
+      names(df) &
+      cols_para_substituir %in% names(cor)
   ]
-
   for (col in cols_validas) {
     df[idx_sinonimos[validos], col] <- cor[match_idx[validos], col]
   }
@@ -178,10 +160,8 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
     pattern = "_",
     replacement = " "
   ))
-
   df$Distance <- mapply(adist, x = df$SubmittedName, y = df$MatchedName)
   colnames(df)
-  # Selecionar e reordenar colunas finais
   if (simplify == TRUE) {
     colunas_finais <- c(
       "Family",
@@ -208,7 +188,6 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
       "VegType"
     )
   }
-
   df <- df[, colunas_finais[colunas_finais %in% names(df)]]
   return(df)
 }
