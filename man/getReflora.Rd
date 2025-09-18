@@ -13,7 +13,9 @@ Default is a temporary directory created with \code{tempdir()}.}
 \item{simplify}{Logical. If \code{TRUE}, removes some columns related to taxonomic hierarchy and remarks
 (e.g., phylum, class, order, countryCode,  occurrenceRemarks, ) to simplify the output. Default is \code{TRUE}.}
 
-\item{cores}{Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.}
+\item{cores}{Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.
+Parallelization is only supported on Linux; on Windows and macOS, this parameter is ignored (set to NULL),
+and the function runs sequentially. As a result, execution may take longer on these systems.}
 }
 \value{
 A \code{data.frame} containing taxonomic information from Flora and Funga of Brazil. Columns include:
@@ -45,7 +47,7 @@ This function requires internet access and take seconds to run.
 }
 \examples{
 \dontrun{
-flora <- getReflora(cores = 5)
+flora <- getReflora()
 head(flora)
 }
 

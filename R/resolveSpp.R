@@ -7,8 +7,13 @@
 #' @param species Character vector. List of species names to be resolved. Names should follow the botanical
 #'                binomial convention (e.g., "Araucaria angustifolia"), morphospecies nomination is allowed (e.g., Cyperus sp. 1 or Asteraceae sp. 1)
 #'                but will be concatenated in the final data frame.
+#'
 #' @param flora A `data.frame` returned by [getReflora()]. If not provided, the function will call `getReflora()`
 #'              to download and process the most recent dataset. Default is `getReflora()`.
+#'
+#' @param hasAuthors Logical. Set to `TRUE` if the submitted binomial names include authorship, or `FALSE` (default) if they do not.
+#'
+#' @param wantAuthors Logical. If `TRUE`, the final binomial names will include authorship; if `FALSE` (default), authorship will be omitted.
 #'
 #' @param simplify Logical. If `TRUE` return few columns with species submitted, matched and acceptedname.
 #' If `FALSE` return all previous information along with species origin, habitat, lifeform or its occurrence domain.
@@ -51,7 +56,7 @@
 #' @seealso [getReflora()]
 #'
 #' @export
-resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
+resolveSpp <- function(species, flora = getReflora(), hasAuthors = FALSE, wantAuthors = TRUE, simplify = FALSE) {
   capitalize <- function(x) {
     sapply(
       strsplit(x, " "),
@@ -71,8 +76,13 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
     replacement = " ",
     x = species
   ))
-
+  if (hasAuthors == TRUE) {
+    flora$taxa <- flora$scientificName
+  }
   exact_df <- flora[flora$taxa %in% species, ]
+
+  exact_df <- flora[flora$scientificName %in% species, ]
+
   tryCatch(exact_df$MatchType <- "Exact", error = function(e) {
     rep(NA, ncol(flora))
   })
@@ -123,13 +133,18 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
   df$acceptedNameUsage[idx_vazios] <- df$taxa[idx_vazios]
   df$Genus <- sub(" .*", "", df$acceptedNameUsage)
   df$MatchedName <- df$taxa
-  df$AcceptedName <- ifelse(
-    grepl(" var\\.| subsp\\.| x ", tolower(df$acceptedNameUsage)),
-    sub("^(([^ ]+ +){4})[^ ]+.*$", "\\1", df$acceptedNameUsage),
-    sub("^(([^ ]+ +){2})[^ ]*.*$", "\\1", df$acceptedNameUsage)
-  )
-  df$AcceptedName <- trimws(df$AcceptedName)
-  df$AcceptedName[df$MatchType == "Not Found"] <- NA
+  if (wantAuthors == TRUE) {
+    df$AcceptedName <- df$acceptedNameUsage
+    df$AcceptedName[df$MatchType == "Not Found"] <- NA
+  } else {
+    df$AcceptedName <- ifelse(
+      grepl(" var\\.| subsp\\.| x ", tolower(df$acceptedNameUsage)),
+      sub("^(([^ ]+ +){4})[^ ]+.*$", "\\1", df$acceptedNameUsage),
+      sub("^(([^ ]+ +){2})[^ ]*.*$", "\\1", df$acceptedNameUsage)
+    )
+    df$AcceptedName <- trimws(df$AcceptedName)
+    df$AcceptedName[df$MatchType == "Not Found"] <- NA
+  }
   df$Genus[df$MatchType == "Not Found"] <- NA
   df$Genus[df$establishmentMeans == "Not Found"] <- NA
   df$Family <- df$family
@@ -151,7 +166,6 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
   for (col in cols_validas) {
     df[idx_sinonimos[validos], col] <- cor[match_idx[validos], col]
   }
-  colnames(df)
   df$Origin[!is.na(df$establishmentMeans)] <- capitalize(df$establishmentMeans[
     !is.na(df$establishmentMeans)
   ])
@@ -161,7 +175,6 @@ resolveSpp <- function(species, flora = getReflora(), simplify = FALSE) {
     replacement = " "
   ))
   df$Distance <- mapply(adist, x = df$SubmittedName, y = df$MatchedName)
-  colnames(df)
   if (simplify == TRUE) {
     colunas_finais <- c(
       "Family",

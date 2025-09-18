@@ -30,7 +30,7 @@ Function for calculating phytosociological descriptors and adjusting phytosociol
 }
 \details{
 This function calculates phytosociological descriptors and performs adjustments on data tables.
-It is largely adapted from the \code{PhytoIndex} function available at https://github.com/ricds/fitoR, created by
+And is an adaptation of \code{FitoR} function available at https://github.com/ricds/fitoR, created by
 Alexandre Gabriel Christo, Pedro Higuchi, Ricardo Dal'Agnol, and Arthur Vinicius Rodrigues.
 
 The input file must contain the following columns with exact lowercase names:

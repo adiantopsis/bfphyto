@@ -10,6 +10,8 @@
 #'            Default is a temporary directory created with `tempdir()`.
 #'
 #' @param cores Integer. Indicate the number of cores to use to speed up the data treatment. Default is 3 cores.
+#' Parallelization is only supported on Linux; on Windows and macOS, this parameter is ignored (set to NULL),
+#' and the function runs sequentially. As a result, execution may take longer on these systems.
 #'
 #' @param simplify Logical. If `TRUE`, removes some columns related to taxonomic hierarchy and remarks
 #'               (e.g., phylum, class, order, countryCode,  occurrenceRemarks, ) to simplify the output. Default is `TRUE`.
@@ -36,7 +38,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' flora <- getReflora(cores = 5)
+#' flora <- getReflora()
 #' head(flora)
 #' }
 #'
@@ -44,14 +46,16 @@
 #' @import parallel
 #' @import jsonlite
 #' @export
-dir <- tempdir()
-cores <- 3
 getReflora <- function(
     dir = tempdir(),
     simplify = TRUE,
     cores = 3) {
-  library(jsonlite)
-  library(parallel)
+  if (Sys.info()[["sysname"]] != "Linux") {
+    message("You are not on a supported OS for parallelization. This process may take longer to run...")
+  } else {
+    message("You have a supported OS for parallelization. Set the 'cores' parameter to speed up the function...")
+  }
+
   dir <- dir
   taxon_file <- file.path(dir, "taxon.txt")
   distr_file <- file.path(dir, "distribution.txt")
@@ -79,7 +83,28 @@ getReflora <- function(
     pattern = "FAMILIA|GENERO|TRIBO|SUB_FAMILIA|CLASSE"
   )
 
-  plantae[spp, ]
+  plantae$taxa[spp] <-
+    paste0(
+      plantae$genus[spp],
+      " ",
+      plantae$specificEpithet[spp],
+      " ",
+      ifelse(
+        plantae$taxonRank[spp] == "VARIEDADE",
+        "var.",
+        ifelse(
+          plantae$taxonRank[spp] == "SUB_ESPECIE",
+          "subsp.",
+          ifelse(
+            plantae$taxonRank[spp] == "FORMA",
+            "f.",
+            ""
+          )
+        )
+      ),
+      " ",
+      plantae$infraspecificEpithet[spp]
+    )
 
   plantae$taxa[spp] <-
     paste0(
@@ -135,51 +160,93 @@ getReflora <- function(
     nomenclaturalStatus = plantae$nomenclaturalStatus,
     stringsAsFactors = FALSE
   )
-
-  rows <- !is.na(profile$lifeForm) & profile$lifeForm != ""
-  profile$Form[rows] <- unlist(parallel::mclapply(
-    profile$lifeForm[rows],
-    mc.cores = cores,
-    function(x) {
-      form <- fromJSON(x)$lifeForm
-      as.character(paste(form, collapse = ", "))
-    }
-  ))
-
-  rows <- !is.na(profile$lifeForm) & profile$lifeForm != ""
-  profile$VegType[rows] <- unlist(parallel::mclapply(
-    profile$lifeForm[rows],
-    mc.cores = cores,
-    function(x) {
-      veg <- fromJSON(x)$vegetationType
-      as.character(paste(veg, collapse = ", "))
-    }
-  ))
-  profile$lifeForm <- NULL
-  profile$habitat <- NULL
-
-  rows <- !is.na(distr$occurrenceRemarks) & distr$occurrenceRemarks != ""
-  distr$Endemism[rows] <-
-    unlist(parallel::mclapply(
-      distr$occurrenceRemarks[rows],
+  if (Sys.info()[["sysname"]] == "Linux") {
+    rows <- !is.na(profile$lifeForm) & profile$lifeForm != ""
+    profile$Form[rows] <- unlist(parallel::mclapply(
+      profile$lifeForm[rows],
       mc.cores = cores,
       function(x) {
-        end <- fromJSON(x)$endemism
-        as.character(paste(end, collapse = ", "))
+        form <- fromJSON(x)$lifeForm
+        as.character(paste(form, collapse = ", "))
       }
     ))
 
-  distr$Domain[rows] <-
-    unlist(parallel::mclapply(
-      distr$occurrenceRemarks[rows],
+    rows <- !is.na(profile$lifeForm) & profile$lifeForm != ""
+    profile$VegType[rows] <- unlist(parallel::mclapply(
+      profile$lifeForm[rows],
       mc.cores = cores,
       function(x) {
-        veg <- fromJSON(x)$phytogeographicDomain
+        veg <- fromJSON(x)$vegetationType
         as.character(paste(veg, collapse = ", "))
       }
     ))
+    profile$lifeForm <- NULL
+    profile$habitat <- NULL
 
-  distr$occurrenceRemarks <- NULL
+    rows <- !is.na(distr$occurrenceRemarks) & distr$occurrenceRemarks != ""
+    distr$Endemism[rows] <-
+      unlist(parallel::mclapply(
+        distr$occurrenceRemarks[rows],
+        mc.cores = cores,
+        function(x) {
+          end <- fromJSON(x)$endemism
+          as.character(paste(end, collapse = ", "))
+        }
+      ))
+
+    distr$Domain[rows] <-
+      unlist(parallel::mclapply(
+        distr$occurrenceRemarks[rows],
+        mc.cores = cores,
+        function(x) {
+          veg <- fromJSON(x)$phytogeographicDomain
+          as.character(paste(veg, collapse = ", "))
+        }
+      ))
+
+    distr$occurrenceRemarks <- NULL
+  } else {
+    rows <- !is.na(profile$lifeForm) & profile$lifeForm != ""
+    profile$Form[rows] <- unlist(lapply(
+      profile$lifeForm[rows],
+      function(x) {
+        form <- fromJSON(x)$lifeForm
+        as.character(paste(form, collapse = ", "))
+      }
+    ))
+
+    rows <- !is.na(profile$lifeForm) & profile$lifeForm != ""
+    profile$VegType[rows] <- unlist(lapply(
+      profile$lifeForm[rows],
+      function(x) {
+        veg <- fromJSON(x)$vegetationType
+        as.character(paste(veg, collapse = ", "))
+      }
+    ))
+    profile$lifeForm <- NULL
+    profile$habitat <- NULL
+
+    rows <- !is.na(distr$occurrenceRemarks) & distr$occurrenceRemarks != ""
+    distr$Endemism[rows] <-
+      unlist(lapply(
+        distr$occurrenceRemarks[rows],
+        function(x) {
+          end <- fromJSON(x)$endemism
+          as.character(paste(end, collapse = ", "))
+        }
+      ))
+
+    distr$Domain[rows] <-
+      unlist(lapply(
+        distr$occurrenceRemarks[rows],
+        function(x) {
+          veg <- fromJSON(x)$phytogeographicDomain
+          as.character(paste(veg, collapse = ", "))
+        }
+      ))
+
+    distr$occurrenceRemarks <- NULL
+  }
 
   dist_df <- merge(taxa_df, distr, by = "id", all.x = TRUE)
   final_df <- merge(dist_df, profile, by = "id", all.x = TRUE)
