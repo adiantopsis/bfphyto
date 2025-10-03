@@ -77,11 +77,10 @@ resolveSpp <- function(species, flora = getReflora(), hasAuthors = FALSE, wantAu
     x = species
   ))
   if (hasAuthors == TRUE) {
+    flora$no_aut <- flora$taxa
     flora$taxa <- flora$scientificName
   }
   exact_df <- flora[flora$taxa %in% species, ]
-
-  exact_df <- flora[flora$scientificName %in% species, ]
 
   tryCatch(exact_df$MatchType <- "Exact", error = function(e) {
     rep(NA, ncol(flora))
@@ -128,9 +127,19 @@ resolveSpp <- function(species, flora = getReflora(), hasAuthors = FALSE, wantAu
   } else {
     NULL
   }
+  
   df <- rbind(fuzzy_found, exact_df, not_found_df)
+
   idx_vazios <- is.na(df$acceptedNameUsage) | df$acceptedNameUsage == ""
-  df$acceptedNameUsage[idx_vazios] <- df$taxa[idx_vazios]
+  if(wantAuthors == TRUE){
+    df$acceptedNameUsage[idx_vazios] <- df$scientificName[idx_vazios]
+  } else {
+    if(hasAuthors == TRUE){
+      df$acceptedNameUsage[idx_vazios] <- df$no_aut[idx_vazios]
+    } else{
+      df$acceptedNameUsage[idx_vazios] <- df$taxa[idx_vazios]
+    }
+  }
   df$Genus <- sub(" .*", "", df$acceptedNameUsage)
   df$MatchedName <- df$taxa
   if (wantAuthors == TRUE) {
