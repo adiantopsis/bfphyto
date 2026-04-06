@@ -158,10 +158,13 @@ treePhyto <- function(x, area, filename = NULL, VI = "percent") {
                 "Morto",
                 "morta",
                 "morto",
-                "cipó",
+                "Cipó",
+                "cipo",
+                "Cipo",
                 "cipó",
                 "liana",
                 "Liana",
+                "Trepadeira",
                 "trepadeira"
         )
 
@@ -170,7 +173,7 @@ treePhyto <- function(x, area, filename = NULL, VI = "percent") {
         Pi <- div$N / sum(div$N)
         Pi <- Pi * log(Pi)
         SW <- -sum(Pi)
-        S <- nrow(div)
+        S <- nrow(div)-1
         J <- SW / log(S)
 
         p <- rbind(
