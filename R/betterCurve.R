@@ -137,6 +137,11 @@ betterCurve <- function(x,
     c <- vegan::specaccum(w_pa, method = "collector")
     data2 <- data.frame(Sites = data3$Sites, Richness = c$richness)
 
+    data2$Percent <- (1-data2$Richness/max(data2$Richness))*100 
+    data2$Sufficiency <- data2$Percent < 10
+
+    suf <- (nrow(data2) - sum(data2$Sufficiency))
+
     a <- ggplot(data2) +
       geom_line(aes(x = Sites, y = Richness), color = "black", linetype = 6) +
       geom_point(aes(x = Sites, y = Richness), size = size, shape = shape, fill = colour, color = colour) +
@@ -149,6 +154,7 @@ betterCurve <- function(x,
       ) +
       labs(x = xlab, y = ylab)
 
+    message(paste0("Sampling sufficiency reached after: ", suf, " sampling unit"))
     result <- list(data = data2, plot = a, result = c)
     return(result)
   }
