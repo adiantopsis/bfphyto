@@ -69,7 +69,7 @@ betterCurve <- function(x,
     ylab <- "Richness"
     line_inext <- c("Rarefaction", "Extrapolation")
   } else if (lang == "pt") {
-    xlab <- if(method = "inext") {"Número de unidades amostrais"} else {"Área (m²)"}
+    if(method = "inext") {xlab = "Número de unidades amostrais"} else {xlab = "Área (m²)"}
     ylab <- "Riqueza"
     line_inext <- c("Rarefação", "Extrapolação")
   } else {
