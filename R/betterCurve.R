@@ -63,6 +63,8 @@ betterCurve <- function(x,
   library(iNEXT)
   library(vegan)
 
+  names <- c("Morta", "Morto", "morta", "Esterco", "Solo exposto", "esterco", "solo exposto", "cipo", "cipó", "Cipó", "areia", "Areia")
+
   # Labels conforme linguagem
   if (lang == "us") {
     xlab <- "Area (m²)"
@@ -79,8 +81,10 @@ betterCurve <- function(x,
   # Monta matriz com reshape2
   if (value == "cob") {
     col <- reshape2::acast(x, parc ~ spp, value.var = value, sum)
+    col <- col [, -(colnames(col) %in% names)] 
   } else {
     col <- reshape2::acast(x, parc ~ spp, value.var = value, length)
+    col <- col [, -(colnames(col) %in% names)] 
   }
 
   # Presença/ausência
