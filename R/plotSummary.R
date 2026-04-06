@@ -31,108 +31,124 @@
 #' @export
 
 plotSummary <- function(data) {
-  cols = grep('cap', colnames(data))
-  ncols = length(cols)
-  if (ncols > 0) param = "cap"
+        cols <- grep("cap", colnames(data))
+        ncols <- length(cols)
+        if (ncols > 0) {
+                param <- "cap"
+        }
 
-  cols2 = grep('dap', colnames(data))
-  ncols2 = length(cols2)
-  if (ncols2 > 0) param = "dap"
+        cols2 <- grep("dap", colnames(data))
+        ncols2 <- length(cols2)
+        if (ncols2 > 0) {
+                param <- "dap"
+        }
 
-  if (param == "dap") cols = cols2
-  if (param == "dap") ncols = ncols2
+        if (param == "dap") {
+                cols <- cols2
+        }
+        if (param == "dap") {
+                ncols <- ncols2
+        }
 
-  if (param == "cap") {
-    data[, cols] <- data[, cols] / 3.14
-    colnames(data)[cols] <- paste0(rep("dap", ncols), seq(1, ncols, 1))
-  } else {
-    data <- data
-  }
+        if (param == "cap") {
+                data[, cols] <- data[, cols] / 3.14
+                colnames(data)[cols] <- paste0(
+                        rep("dap", ncols),
+                        seq(1, ncols, 1)
+                )
+        } else {
+                data <- data
+        }
 
-  #Riqueza e abundancia
-  to_remove <- c(
-    'rocha',
-    'mantilho',
-    'morta',
-    'areia',
-    'solo exposto',
-    'Rocha',
-    'Mantilho',
-    'Morta',
-    'Areia',
-    'Solo exposto',
-    'rock',
-    'litter',
-    'dead',
-    'sand',
-    'bare soil',
-    'Rock',
-    'Litter',
-    'Dead',
-    'Sand',
-    'Bare soil'
-  )
-  data_clean <- data[!data$spp == "Morta", ]
-  data_raw <- data
-  ab <- table(data_clean$parc, data_clean$spp)
+        # Riqueza e abundancia
+        to_remove <- c(
+                "rocha",
+                "mantilho",
+                "morta",
+                "areia",
+                "solo exposto",
+                "Rocha",
+                "Mantilho",
+                "Morta",
+                "Areia",
+                "Solo exposto",
+                "rock",
+                "litter",
+                "dead",
+                "sand",
+                "bare soil",
+                "Rock",
+                "Litter",
+                "Dead",
+                "Sand",
+                "Bare soil"
+        )
+        data_clean <- data[!data$spp == "Morta", ]
+        data_raw <- data
+        ab <- table(data_clean$parc, data_clean$spp)
 
-  freq <- ab
-  freq[freq > 0] <- 1
+        freq <- ab
+        freq[freq > 0] <- 1
 
-  S <- apply(freq, 1, sum) #Riqueza por UA
+        S <- apply(freq, 1, sum) # Riqueza por UA
 
-  #Diversidade e equitatividade
-  Pi <- ab / rowSums(ab)
-  Pi <- Pi * log(Pi)
-  SW = -rowSums(Pi, na.rm = TRUE)
-  S <- rowSums(ifelse(ab > 0, 1, 0))
-  J = SW / log(S)
+        # Diversidade e equitatividade
+        Pi <- ab / rowSums(ab)
+        Pi <- Pi * log(Pi)
+        SW <- -rowSums(Pi, na.rm = TRUE)
+        S <- rowSums(ifelse(ab > 0, 1, 0))
+        J <- SW / log(S)
 
-  #Diametro
-  N_raw <- table(data_raw$parc, data_raw$spp)
-  N <- rowSums(N_raw)
-  df <- data.frame(data_raw)
-  df[is.na(df)] <- 0
-  DAP <- grep("dap", colnames(df))
-  len <- ifelse(df[, DAP] > 0, 1, 0)
-  l <- apply(len, 1, sum)
-  q <- which(l > 1)
-  df[q, DAP] <- df[q, DAP]^2
-  df$dap_eq <- df[, DAP[1]]
-  df$dap_eq[q] <- sqrt(apply(df[q, DAP], 1, sum))
+        # Diametro
+        N_raw <- table(data_raw$parc, data_raw$spp)
+        N <- rowSums(N_raw)
+        df <- data.frame(data_raw)
+        df[is.na(df)] <- 0
+        DAP <- grep("dap", colnames(df))
 
-  df <- cbind.data.frame(
-    parc = df$parc,
-    spp = df$spp,
-    H = df$H,
-    dap_eq = df$dap_eq
-  )
-  par_sum <- tapply(df$dap_eq, df$parc, sum)
-  mean_DAP <- tapply(df$dap_eq, df$parc, mean)
-  sd_DAP <- tapply(df$dap_eq, df$parc, sd)
+        if (length(DAP) > 1) {
+                len <- ifelse(df[, DAP] > 0, 1, 0)
+                l <- apply(len, 1, sum)
+                q <- which(l > 1)
+                df[q, DAP] <- df[q, DAP]^2
+                df$dap_eq <- df[, DAP[1]]
+                df$dap_eq[q] <- sqrt(apply(df[q, DAP], 1, sum))
+        } else {
+                df$dap_eq <- df$dap
+        }
 
-  #Area basal
-  df$g <- (pi * df$dap_eq^2) / 40000
-  AB <- tapply(df$g, df$parc, sum)
+        df <- cbind.data.frame(
+                parc = df$parc,
+                spp = df$spp,
+                H = df$H,
+                dap_eq = df$dap_eq
+        )
+        par_sum <- tapply(df$dap_eq, df$parc, sum)
+        mean_DAP <- tapply(df$dap_eq, df$parc, mean)
+        sd_DAP <- tapply(df$dap_eq, df$parc, sd)
 
-  #Altura
+        # Area basal
+        df$g <- (pi * df$dap_eq^2) / 40000
+        AB <- tapply(df$g, df$parc, sum)
 
-  mean_H <- tapply(data_raw$H, data_raw$parc, mean)
+        # Altura
 
-  sd_H <- tapply(data_raw$H, data_raw$parc, sd)
+        mean_H <- tapply(data_raw$H, data_raw$parc, mean)
 
-  #Data Frame final
-  Parc_res = cbind.data.frame(
-    N,
-    Richness = S,
-    Shannon = SW,
-    Pielow = J,
-    mean_H,
-    sd_H,
-    mean_DAP,
-    sd_DAP,
-    AB
-  )
-  print(Parc_res)
-  return(list(Resume = Parc_res, Input = df))
+        sd_H <- tapply(data_raw$H, data_raw$parc, sd)
+
+        # Data Frame final
+        Parc_res <- cbind.data.frame(
+                N,
+                Richness = S,
+                Shannon = SW,
+                Pielow = J,
+                mean_H,
+                sd_H,
+                mean_DAP,
+                sd_DAP,
+                AB
+        )
+        print(Parc_res)
+        return(list(Resume = Parc_res, Input = df))
 }
