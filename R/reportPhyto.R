@@ -45,7 +45,7 @@ reportphyto <- function(
   }
 
   if (type == "forest") {
-    r <- x[[3]]
+    r <- x[[2]]
     x <- x[[1]]
     colunas_necessarias <- c("N", "AB", "FA", "DoA", "VI")
     if (!all(colunas_necessarias %in% colnames(x))) {
