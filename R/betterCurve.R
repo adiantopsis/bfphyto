@@ -8,7 +8,8 @@
 #' @param plot_area Numeric. Area (m²) of each plot or sampling unit, used to calculate accumulated area.
 #' @param method Character. Method for calculating the accumulation curve. Must be one of: \code{"collector"}, \code{"exact"}, \code{"random"}, or \code{"inext"}.
 #' @param value Character. Variable used for calculation: \code{"cob"} (coverage) or another variable indicating occurrence counts.
-#' @param colour Character. Color used in the plot for the ribbon and points of the curve (e.g., \code{"lightgreen"}).
+#' @param colour, shape and size Character. Custom shape, size and the colour of
+#' points (e.g., \code{"lightgreen"}).
 #' @param q Numeric. Order of Hill number for the \code{"inext"} method. Default is \code{0}, corresponding to species richness.
 #' @param lang Character. Language for axis labels and legends. Can be \code{"pt"} (Portuguese) or \code{"us"} (English). Default is \code{"pt"}.
 #'
@@ -46,7 +47,9 @@ betterCurve <- function(x,
                         value = "cob",
                         colour = "lightgreen",
                         q = 0,
-                        lang = "pt") {
+                        lang = "pt",
+                        shape = 21,
+                        size = 2) {
   # Pacotes usados
   if (!requireNamespace("ggplot2", quietly = TRUE)) stop("Package 'ggplot2' is required")
   if (!requireNamespace("iNEXT", quietly = TRUE)) stop("Package 'iNEXT' is required")
@@ -99,7 +102,9 @@ betterCurve <- function(x,
       labs(x = xlab, y = ylab) +
       scale_linetype_manual(values = c(1, 3), labels = line_inext)
 
-    return(list(result = out1, plot = p))
+    result <- list(data= col1, result = out1, plot = p)
+
+    return(result)
   }
 
   # Métodos com vegan::specaccum (random, exact e collector)
@@ -111,7 +116,7 @@ betterCurve <- function(x,
     b <- ggplot(data1) +
       geom_ribbon(aes(x = Sites, ymin = Richness - SD, ymax = Richness + SD), fill = colour, alpha = 0.5) +
       geom_line(aes(x = Sites, y = Richness), color = "black", linetype = 6) +
-      geom_point(aes(x = Sites, y = Richness), size = 4, shape = 21, fill = colour, color = colour) +
+      geom_point(aes(x = Sites, y = Richness), size = size, shape = shape, fill = colour, color = colour) +
       theme_bw(base_family = "sans", base_size = 12) +
       theme(
         legend.position = "right",
@@ -130,7 +135,7 @@ betterCurve <- function(x,
 
     a <- ggplot(data2) +
       geom_line(aes(x = Sites, y = Richness), color = "black", linetype = 6) +
-      geom_point(aes(x = Sites, y = Richness), size = 4, shape = 21, fill = colour, color = colour) +
+      geom_point(aes(x = Sites, y = Richness), size = size, shape = shape, fill = colour, color = colour) +
       theme_bw(base_family = "sans", base_size = 12) +
       theme(
         legend.position = "right",
@@ -140,7 +145,8 @@ betterCurve <- function(x,
       ) +
       labs(x = xlab, y = ylab)
 
-    return(list(plot = a, result = c))
+    result <- list(data = data2, plot = a, result = c)
+    return(result)
   }
 
   stop("Method not found. Please choose one of: 'inext', 'collector', 'exact', or 'random'.")

@@ -11,7 +11,9 @@ betterCurve(
   value = "cob",
   colour = "lightgreen",
   q = 0,
-  lang = "pt"
+  lang = "pt",
+  shape = 21,
+  size = 2
 )
 }
 \arguments{
@@ -23,7 +25,8 @@ betterCurve(
 
 \item{value}{Character. Variable used for calculation: \code{"cob"} (coverage) or another variable indicating occurrence counts.}
 
-\item{colour}{Character. Color used in the plot for the ribbon and points of the curve (e.g., \code{"lightgreen"}).}
+\item{colour, }{shape and size Character. Custom shape, size and the colour of
+points (e.g., \code{"lightgreen"}).}
 
 \item{q}{Numeric. Order of Hill number for the \code{"inext"} method. Default is \code{0}, corresponding to species richness.}
 

@@ -34,130 +34,157 @@
 #' treePhyto(x = Southern_Forest, area = 100, VI = "cottam", filename = "my_result")
 #' @export
 treePhyto <- function(x, area, filename = NULL, VI = "percent") {
-  if (missing(VI)) {
-    VI <- "cottam"
-  } else {
-    VI <- VI
-  }
-  matriz <- table(x$spp, x$parc)
+        if (missing(VI)) {
+                VI <- "cottam"
+        } else {
+                VI <- VI
+        }
+        matriz <- table(x$spp, x$parc)
 
-  # numero de parcelas
-  nparc <- length(levels(as.factor(x$parc)))
+        # numero de parcelas
+        nparc <- length(levels(as.factor(x$parc)))
 
-  # area total amostrada
-  area.parc <- (area * nparc)
+        # area total amostrada
+        area.parc <- (area * nparc)
 
-  # densidade
-  dta <- length(x$spp) / (area.parc / 10000)
+        # densidade
+        dta <- length(x$spp) / (area.parc / 10000)
 
-  # desvio da densidade entre parcelas
-  dtadesv <- 0
-  dtai <- 1
-  vetor <- 1
-  while (dtai <= nparc) {
-    length(vetor) <- nparc
-    vetor[dtai] <- sum(matriz[, dtai])
-    dtadesv <- sd(vetor) / (area / 10000)
-    dtai <- dtai + 1
-  }
+        # desvio da densidade entre parcelas
+        dtadesv <- 0
+        dtai <- 1
+        vetor <- 1
+        while (dtai <= nparc) {
+                length(vetor) <- nparc
+                vetor[dtai] <- sum(matriz[, dtai])
+                dtadesv <- sd(vetor) / (area / 10000)
+                dtai <- dtai + 1
+        }
 
-  # calcula o numero de ind amostrados
-  N <- apply(matriz, 1, sum)
+        # calcula o numero de ind amostrados
+        N <- apply(matriz, 1, sum)
 
-  # calcula densidades
-  DA <- apply(matriz, 1, sum) / (area.parc / 10000)
-  DR <- DA / sum(DA) * 100
+        # calcula densidades
+        DA <- apply(matriz, 1, sum) / (area.parc / 10000)
+        DR <- DA / sum(DA) * 100
 
-  # calcula frequencias
-  freq <- (if (length(dim(matriz)) > 1) {
-    apply(matriz > 0, 1, sum)
-  } else {
-    sum(matriz > 0)
-  })
-  FA <- (freq / nparc) * 100
-  FR <- (FA / sum(FA)) * 100
+        # calcula frequencias
+        freq <- (if (length(dim(matriz)) > 1) {
+                apply(matriz > 0, 1, sum)
+        } else {
+                sum(matriz > 0)
+        })
+        FA <- (freq / nparc) * 100
+        FR <- (FA / sum(FA)) * 100
 
-  # checa por NAs nos dados e transforma em zeros
-  x[is.na(x)] <- 0
+        # checa por NAs nos dados e transforma em zeros
+        x[is.na(x)] <- 0
 
-  # determina se existe "caps" ou "daps" e quais colunas estão
-  cols <- grep("cap", colnames(x))
-  ncols <- length(cols)
-  if (ncols > 0) param <- "cap"
+        # determina se existe "caps" ou "daps" e quais colunas estão
+        cols <- grep("cap", colnames(x))
+        ncols <- length(cols)
+        if (ncols > 0) {
+                param <- "cap"
+        }
 
-  cols2 <- grep("dap", colnames(x))
-  ncols2 <- length(cols2)
-  if (ncols2 > 0) param <- "dap"
+        cols2 <- grep("dap", colnames(x))
+        ncols2 <- length(cols2)
+        if (ncols2 > 0) {
+                param <- "dap"
+        }
 
-  if (param == "dap") cols <- cols2
-  if (param == "dap") ncols <- ncols2
+        if (param == "dap") {
+                cols <- cols2
+        }
+        if (param == "dap") {
+                ncols <- ncols2
+        }
 
-  # calcula a area da seção transversal para cada cap/dap e faz a soma por individuo
-  i <- 1
-  x$areasec <- 0
-  while (i <= ncols) {
-    if (param == "cap") x$areasec <- x$areasec + ((pi * (x[, cols[i]] / pi)^2) / 40000)
-    if (param == "dap") x$areasec <- x$areasec + ((pi * x[, cols[i]]^2) / 40000)
-    i <- i + 1
-  }
+        # calcula a area da seção transversal para cada cap/dap e faz a soma por individuo
+        i <- 1
+        x$areasec <- 0
+        while (i <= ncols) {
+                if (param == "cap") {
+                        x$areasec <- x$areasec +
+                                ((pi * (x[, cols[i]] / pi)^2) / 40000)
+                }
+                if (param == "dap") {
+                        x$areasec <- x$areasec + ((pi * x[, cols[i]]^2) / 40000)
+                }
+                i <- i + 1
+        }
 
-  # calcula as dominancias
-  DoA <- tapply(x$areasec, x$spp, sum) / (area.parc / 10000)
-  DoR <- DoA / sum(DoA) * 100
+        # calcula as dominancias
+        DoA <- tapply(x$areasec, x$spp, sum) / (area.parc / 10000)
+        DoR <- DoA / sum(DoA) * 100
 
-  # area basal por espécie
-  AB <- tapply(x$areasec, x$spp, sum)
+        # area basal por espécie
+        AB <- tapply(x$areasec, x$spp, sum)
 
-  # area basal
-  abta <- sum(DoA)
+        # area basal
+        abta <- sum(DoA)
 
-  # desvio da area basal entre parcelas
-  somag <- tapply(x$areasec, x$parc, sum) / (area / 10000)
-  abdesv <- sd(somag)
+        # desvio da area basal entre parcelas
+        somag <- tapply(x$areasec, x$parc, sum) / (area / 10000)
+        abdesv <- sd(somag)
 
-  # calcula o indice de valor de importancia
-  if (VI == "cottam") {
-    VI <- (DR + DoR + FR)
-  } else {
-    if (VI == "percent") {
-      VI <- (DR + DoR + FR) / 3
-    }
-  }
+        # calcula o indice de valor de importancia
+        if (VI == "cottam") {
+                VI <- (DR + DoR + FR)
+        } else {
+                if (VI == "percent") {
+                        VI <- (DR + DoR + FR) / 3
+                }
+        }
 
-  # monta a tabela
-  fito <- data.frame(
-    N = N,
-    AB = AB,
-    DA = DA,
-    DR = DR,
-    DoA = DoA,
-    DoR = DoR,
-    FA = FA,
-    FR = FR,
-    VI = VI
-  )
+        # monta a tabela
+        fito <- data.frame(
+                N = N,
+                AB = AB,
+                DA = DA,
+                DR = DR,
+                DoA = DoA,
+                DoR = DoR,
+                FA = FA,
+                FR = FR,
+                VI = VI
+        )
 
-  fito <- fito[order(VI, decreasing = TRUE), ]
+        fito <- fito[order(VI, decreasing = TRUE), ]
 
-  # calcula os indices de diversidade
-  Pi <- N / sum(N)
-  Pi <- Pi * log(Pi)
-  SW <- -sum(Pi)
-  S <- nrow(fito) - 1
-  J <- SW / log(S)
+        # calcula os indices de diversidade
+        names <- c(
+                "Morta",
+                "Morto",
+                "morta",
+                "morto",
+                "cipó",
+                "cipó",
+                "liana",
+                "Liana",
+                "trepadeira"
+        )
 
-  p <- rbind(
-    "Total density" = dta,
-    "Basal area" = round(abta, digits = 2),
-    Richness = S,
-    Diversity = SW,
-    Eveness = J
-  )
+        div <- fito[-(rownames(fito) %in% names), ]
 
-  l <- list(
-    Resume = p,
-    Phytossociology = fito
-  )
+        Pi <- div$N / sum(div$N)
+        Pi <- Pi * log(Pi)
+        SW <- -sum(Pi)
+        S <- nrow(div)
+        J <- SW / log(S)
 
-  return(l)
+        p <- rbind(
+                "Total density" = dta,
+                "Basal area" = round(abta, digits = 2),
+                Richness = S,
+                Diversity = SW,
+                Eveness = J
+        )
+
+        l <- list(
+                Resume = p,
+                Phytossociology = fito
+        )
+
+        return(l)
 }

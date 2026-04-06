@@ -7,7 +7,7 @@ Description: This package provides tools to deals with floristic data and calcul
 License: GPL-3 
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports: 
    stats,
    doParallel,
@@ -21,4 +21,9 @@ Imports:
     ggplot2,
     iNEXT,
     reshape2,
-    vegan
+    vegan,
+    glue,
+    purrr,
+    sf,
+    geobr,
+    ggspatial
