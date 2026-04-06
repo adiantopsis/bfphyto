@@ -63,7 +63,7 @@ betterCurve <- function(x,
   library(iNEXT)
   library(vegan)
 
-  names <- c("Morta", "Morto", "morta", "Esterco", "Solo exposto", "esterco", "solo exposto", "cipo", "cipó", "Cipó", "areia", "Areia")
+  names <- c("Morta", "Morto","morto", "morta", "Esterco", "Solo exposto", "esterco", "solo exposto", "cipo", "cipó", "Cipó", "areia", "Areia")
 
   # Labels conforme linguagem
   if (lang == "us") {
