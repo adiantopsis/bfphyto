@@ -45,8 +45,8 @@ reportphyto <- function(
   }
 
   if (type == "forest") {
-    r <- x[[2]]
-    x <- x[[1]]
+    r <- x[[1]]
+    x <- x[[2]]
     colunas_necessarias <- c("N", "AB", "FA", "DoA", "VI")
     if (!all(colunas_necessarias %in% colnames(x))) {
       stop("A planilha deve conter as colunas: 'N', 'AB', 'FA', 'DoA', 'VI'.")
