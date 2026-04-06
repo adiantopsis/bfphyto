@@ -154,8 +154,9 @@ betterCurve <- function(x,
       ) +
       labs(x = xlab, y = ylab)
 
-    message(paste0("Sampling sufficiency reached after: ", suf, " sampling unit"))
-    result <- list(data = data2, plot = a, result = c)
+    suf <- paste0("Sampling sufficiency reached, following Cain (1975) criteria, after: ", suf, " sampling units")
+
+    result <- list(data = data2, plot = a, result = c, Sufficiency = suf)
     return(result)
   }
 
