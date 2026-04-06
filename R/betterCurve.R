@@ -40,7 +40,6 @@
 #' @importFrom vegan specaccum
 #'
 #' @export
-
 betterCurve <- function(x,
                         plot_area,
                         method = "collector",
@@ -84,7 +83,8 @@ betterCurve <- function(x,
     col <- col [, -(colnames(col) %in% names)] 
   } else {
     col <- reshape2::acast(x, parc ~ spp, value.var = value, length)
-    col <- col [, -(colnames(col) %in% names)] 
+  if(sum(colnames(col)%in% names) > 0){
+    col <- col[, -(colnames(col) %in% names)]} else {col <- col}
   }
 
   # Presença/ausência
