@@ -11,7 +11,7 @@ A data frame. Column names and structure depend on the original CSV.
 CNCFlora (Centro Nacional de Conservação da Flora), 2020.
 }
 \usage{
-ameacadas_br_cnc2020
+data(ameacadas_br_cnc2020)
 }
 \description{
 A dataset listing threatened plant species in Brazil according to the CNCFlora (Centro Nacional de Conservação da Flora) 2020 assessment.

@@ -4,7 +4,13 @@
 \alias{reportLand}
 \title{Relatório de Paisagem e Biomas (IBGE)}
 \usage{
-reportLand(lat, lon)
+reportLand(
+  lat,
+  lon,
+  year = 2019,
+  shape = 8,
+  caption = "Fonte: IBGE (2018)\\n Datum: SIRGAS2000"
+)
 }
 \arguments{
 \item{lat}{Numérico. Latitude em graus decimais (Datum WGS84).}

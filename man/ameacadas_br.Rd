@@ -11,7 +11,7 @@ A data frame. Column names and structure depend on the original CSV.
 Ministério do Meio Ambiente (MMA), Portaria nº 148, de 7 de junho de 2022.
 }
 \usage{
-ameacadas_br
+data(ameacadas_br)
 }
 \description{
 A dataset containing the list of plant species classified as threatened in Brazil,

@@ -14,7 +14,7 @@ A data frame with the following columns:
 }
 }
 \usage{
-Southern_Forest
+data(Southern_Forest)
 }
 \description{
 A dataset with sample data for forest vegetation, including plot ID, species, diameter at breast height, and height.

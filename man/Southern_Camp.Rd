@@ -14,7 +14,7 @@ A data frame with the following columns:
 }
 }
 \usage{
-Southern_Camp
+data(Southern_Camp)
 }
 \description{
 A dataset with sample data for herbaceous vegetation, including plot ID, species, coverage, and height.

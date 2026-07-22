@@ -11,7 +11,7 @@ A data frame. Column names and structure depend on the original CSV.
 Internal compilation from: Guillet et al. (2009) Plantas Raras do Brasil
 }
 \usage{
-plantas_raras_br
+data(plantas_raras_br)
 }
 \description{
 A dataset listing rare native plant species in Brazil. The criteria for rarity may include geographic distribution, endemism, and population size.

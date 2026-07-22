@@ -11,7 +11,7 @@ A data frame. Column names and structure depend on the original CSV.
 Governo do Estado do Rio Grande do Sul, Decreto nº 52.109, de 1º de dezembro de 2014.
 }
 \usage{
-ameacadas_rs
+data(ameacadas_rs)
 }
 \description{
 A dataset listing plant species classified as threatened in the state of Rio Grande do Sul, Brazil,
