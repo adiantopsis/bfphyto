@@ -138,8 +138,6 @@ getPOWO <- function(families = NULL, genus = NULL, species = NULL, synonyms = FA
     match(infos_occ$locality, botregions$country)
   ]
   
-  view(infos_occ)
-  
   if(synonyms == FALSE){
     infos_occ  <- infos_occ[infos_occ$taxonomicstatus == "Accepted",]
     
