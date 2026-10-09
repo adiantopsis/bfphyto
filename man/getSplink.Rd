@@ -17,6 +17,7 @@ getSplink(
   stateProvince = NULL,
   county = NULL,
   bbox = NULL,
+  locality = NULL,
   Coordinates = NULL,
   CoordinatesQuality = NULL,
   Scope = NULL,
@@ -25,6 +26,7 @@ getSplink(
   Images = NULL,
   RedList = FALSE,
   MaxRecords = NULL,
+  limit = 9999,
   file.format = "csv",
   compress = FALSE
 )
@@ -50,6 +52,8 @@ getSplink(
 
 \item{bbox}{Numeric vector defining a bounding box in the format: \code{c(minLon, minLat, maxLon, maxLat)}.}
 
+\item{locality}{Character vector with locality names to filter the query.}
+
 \item{Coordinates}{Character. Options: \code{"yes"}, \code{"no"}, \code{"consistent"}, \code{"original"}, \code{"automatic"}, \code{"blocked"}.}
 
 \item{CoordinatesQuality}{Character. \code{"Good"} or \code{"Bad"}.}
@@ -65,6 +69,8 @@ getSplink(
 \item{RedList}{Logical or character. If \code{TRUE} or \code{"all"}, filters Red List species (e.g., \code{"VU+EN+CR"}).}
 
 \item{MaxRecords}{Integer. Maximum number of records to return.}
+
+\item{limit}{Integer. Maximum number of records per request page (default = 9999).}
 
 \item{file.format}{File format to save the data: \code{"csv"} (default) or \code{"rds"}.}
 
@@ -88,11 +94,11 @@ Ensure that you respect all data usage and citation policies from speciesLink an
 \examples{
 \dontrun{
 getSplink(
-  apikey = "your_api_key_here",
-  species = c("Euterpe edulis"),
-  country = "Brazil",
-  save = TRUE,
-  file.format = "csv"
+    apikey = "your_api_key_here",
+    species = c("Euterpe edulis"),
+    country = "Brazil",
+    save = TRUE,
+    file.format = "csv"
 )
 }
 
