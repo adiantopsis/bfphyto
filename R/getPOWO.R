@@ -81,7 +81,6 @@ getPOWO <- function(families = NULL, genus = NULL, species = NULL, synonyms = FA
     botregions <- expowo::botregions
   }
   
-  
   dir <- dir
   taxon_file <- file.path(dir, "wcvp_taxon.csv")
   distr_file <- file.path(dir, "wcvp_distribution.csv")
@@ -119,7 +118,7 @@ getPOWO <- function(families = NULL, genus = NULL, species = NULL, synonyms = FA
   }
   
   sub$coreid <- sub$taxonid
-  
+
   occ_sub <- distr[distr$coreid %in% sub$coreid,]
   
   union_occ <- merge(sub, occ_sub, by= "coreid") 
